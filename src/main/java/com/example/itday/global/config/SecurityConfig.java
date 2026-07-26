@@ -21,6 +21,7 @@ public class SecurityConfig {
             "/api/oauth/social",
             "/api/oauth/social/callback",
             "/api/auth/refresh",
+            "/api/maps/**",
             "api/terms",
             "api/brands"
     };

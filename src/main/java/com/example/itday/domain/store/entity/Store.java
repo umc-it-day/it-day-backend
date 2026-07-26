@@ -7,12 +7,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "store")
+@Table(
+        name = "store",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_store_kakao_place_id",
+                columnNames = "kakaoPlaceId"
+        )
+)
 public class Store {
 
     @Id
@@ -23,6 +31,9 @@ public class Store {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brandId", nullable = false)
     private Brand brand;
+
+    @Column(name = "kakaoPlaceId", nullable = false, length = 50)
+    private String kakaoPlaceId;
 
     @Column(name = "storeName", nullable = false)
     private String storeName;
@@ -38,4 +49,10 @@ public class Store {
 
     @Column(name = "telNum")
     private String telNum;
+
+    @Column(name = "longitude", nullable = false, precision = 10, scale = 7)
+    private BigDecimal longitude;
+
+    @Column(name = "latitude", nullable = false, precision = 10, scale = 7)
+    private BigDecimal latitude;
 }
