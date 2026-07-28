@@ -1,6 +1,7 @@
 package com.example.itday.domain.member.controller;
 
 import com.example.itday.domain.attendance.dto.AttendanceResDTO;
+import com.example.itday.domain.attendance.dto.AttendanceRewardResDTO;
 import com.example.itday.domain.attendance.service.AttendanceService;
 import com.example.itday.domain.barcode.dto.BarcodeReqDTO;
 import com.example.itday.domain.barcode.dto.BarcodeResDTO;
@@ -112,9 +113,9 @@ public class MemberController {
     }
 
     @PostMapping("/me/attendance")
-    public ApiResponse<Void> checkAttendance(@AuthenticationPrincipal Long memberId) {
-        attendanceService.checkAttendance(memberId);
-        return ApiResponse.onSuccess(null);
+    public ApiResponse<AttendanceRewardResDTO> checkAttendance(@AuthenticationPrincipal Long memberId) {
+        AttendanceRewardResDTO result = attendanceService.checkAttendance(memberId);
+        return ApiResponse.onSuccess(result);
     }
 
     @GetMapping("/me/attendance")

@@ -1,6 +1,7 @@
 package com.example.itday.domain.attendance.service;
 
 import com.example.itday.domain.attendance.dto.AttendanceResDTO;
+import com.example.itday.domain.attendance.dto.AttendanceRewardResDTO;
 import com.example.itday.domain.attendance.entity.Attendance;
 import com.example.itday.domain.attendance.repository.AttendanceRepository;
 import com.example.itday.domain.member.entity.Member;
@@ -27,12 +28,12 @@ public class AttendanceService {
     private final PointHistoryRepository pointHistoryRepository;
 
     @Transactional
-    public void checkAttendance(Long memberId){
+    public AttendanceRewardResDTO checkAttendance(Long memberId){
 
         LocalDate today = LocalDate.now();
 
         if(attendanceRepository.existsByMemberIdAndAttendedAt(memberId, today)){
-            return; // 이미 출석을 했다면 로직 종ㄹ
+            return new AttendanceRewardResDTO(0); // 이미 출석을 했다면 0포인트
         }
 
         Member member = memberRepository.findById(memberId)
@@ -55,13 +56,13 @@ public class AttendanceService {
         PointReason reason = PointReason.ATTENDANCE;
 
         if (streak == 7 && !hasReceivedThisMonth(memberId, PointReason.STREAK_7_DAYS, monthStart, today)) {
-            rewardPoint = 30;
+            rewardPoint = 40;
             reason = PointReason.STREAK_7_DAYS;
         } else if (streak == 15 && !hasReceivedThisMonth(memberId, PointReason.STREAK_15_DAYS, monthStart, today)) {
-            rewardPoint = 30;
+            rewardPoint = 40;
             reason = PointReason.STREAK_15_DAYS;
         } else if (isLastDayOfMonth(today) && isMonthlyPerfect(memberId, today)) {
-            rewardPoint = 100;
+            rewardPoint = 110;
             reason = PointReason.MONTHLY_PERFECT;
         }
 
@@ -74,6 +75,8 @@ public class AttendanceService {
         pointHistoryRepository.save(pointHistory);
 
         member.addPoint(rewardPoint);
+
+        return new AttendanceRewardResDTO(rewardPoint);
     }
 
     public AttendanceResDTO getMonthlyAttendance(Long memberId) {
