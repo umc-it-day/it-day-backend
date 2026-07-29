@@ -2,10 +2,9 @@ package com.example.itday.domain.map.service;
 
 import com.example.itday.domain.benefit.entity.Benefit;
 import com.example.itday.domain.benefit.repository.BenefitRepository;
-import com.example.itday.domain.map.dto.KakaoLocalResponse;
-import com.example.itday.domain.map.dto.MapSearchResponse;
-import com.example.itday.domain.map.dto.PlaceResponse;
-import com.example.itday.domain.map.dto.StoreDetailResponse;
+import com.example.itday.domain.brands.entity.Brand;
+import com.example.itday.domain.brands.repository.BrandRepository;
+import com.example.itday.domain.map.dto.*;
 import com.example.itday.domain.map.exception.KakaoMapApiException;
 import com.example.itday.domain.map.exception.StoreNotFoundException;
 import com.example.itday.domain.store.entity.Store;
@@ -35,6 +34,7 @@ public class MapService {
     private final WebClient.Builder webClientBuilder;
     private final StoreRepository storeRepository;
     private final BenefitRepository benefitRepository;
+    private final BrandRepository brandRepository;
 
     @Value("${kakao.rest-api-key}")
     private String kakaoRestApiKey;
@@ -219,4 +219,63 @@ public class MapService {
 
         return (int) Math.round(EARTH_RADIUS_METERS * centralAngle);
     }
+
+    public List<NearbyPlaceResDTO> searchByCategory(
+            String category,
+            Double longitude,
+            Double latitude,
+            Integer radius
+    ) {
+        List<Brand> brands = brandRepository.findAll();
+
+        URI uri = createUri(category, longitude, latitude, radius, 1, 15);
+
+        try {
+            KakaoLocalResponse kakaoResponse = webClientBuilder.build()
+                    .get()
+                    .uri(uri)
+                    .header("Authorization", "KakaoAK " + kakaoRestApiKey)
+                    .retrieve()
+                    .bodyToMono(KakaoLocalResponse.class)
+                    .block();
+
+            validateKakaoResponse(kakaoResponse);
+
+            List<NearbyPlaceResDTO> results = new ArrayList<>();
+
+            for (KakaoLocalResponse.Document document : kakaoResponse.documents()) {
+
+                Brand matchedBrand = brands.stream()
+                        .filter(brand -> document.placeName().contains(brand.getBrandName()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchedBrand == null) {
+                    continue;
+                }
+
+                Integer distanceMeters = (longitude != null && latitude != null)
+                        ? calculateDistanceMeters(longitude, latitude, Double.valueOf(document.x()), Double.valueOf(document.y()))
+                        : null;
+
+                List<String> benefitTitles = findActiveBenefits(benefitRepository.findAllByBrandId(matchedBrand.getId()))
+                        .stream()
+                        .map(Benefit::getTitle)
+                        .toList();
+
+                results.add(new NearbyPlaceResDTO(
+                        document.placeName(),
+                        matchedBrand.getBrandImg(),
+                        distanceMeters,
+                        benefitTitles
+                ));
+            }
+
+            return results;
+
+        } catch (WebClientResponseException exception) {
+            throw new KakaoMapApiException("Failed to call the Kakao local search API.", exception);
+        }
+    }
+
 }
