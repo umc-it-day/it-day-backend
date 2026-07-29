@@ -37,9 +37,6 @@ public class Benefit {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "benefitValue", nullable = false)
-    private Integer benefitValue;
-
     @Column(name = "validFrom", nullable = false)
     private LocalDate validFrom;
 
