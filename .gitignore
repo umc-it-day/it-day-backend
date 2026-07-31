@@ -10,3 +10,5 @@ out/
 !.env.example
 
 local.properties
+
+/it-day-backend/
