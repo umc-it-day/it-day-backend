@@ -1,6 +1,7 @@
 package com.example.itday.domain.map.controller;
 
 import com.example.itday.domain.map.dto.MapSearchResponse;
+import com.example.itday.domain.map.dto.NearbyPlaceResDTO;
 import com.example.itday.domain.map.dto.StoreDetailResponse;
 import com.example.itday.domain.map.service.MapService;
 import com.example.itday.global.apiPayload.ApiResponse;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,4 +56,17 @@ public class MapController {
                 mapService.getStoreDetail(storeId, longitude, latitude);
         return ApiResponse.onSuccess(result);
     }
+
+    @GetMapping("/stores/search")
+    public ApiResponse<List<NearbyPlaceResDTO>> searchByCategory(
+            @RequestParam String category,
+            @RequestParam Double longitude,
+            @RequestParam Double latitude,
+            @RequestParam(required = false) Integer radius
+    ) {
+        List<NearbyPlaceResDTO> result = mapService.searchByCategory(category, longitude, latitude, radius);
+        return ApiResponse.onSuccess(result);
+    }
+
+
 }
