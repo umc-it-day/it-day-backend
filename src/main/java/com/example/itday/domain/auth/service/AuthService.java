@@ -28,17 +28,13 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public KakaoLoginResDTO kakaoLogin(String code){
-
-        // code -> kakaoAccessToken
-        String kakaoAccessToken = kakaoAuthClient.getAccessToken(code);
+    public KakaoLoginResDTO kakaoLogin(String kakaoAccessToken){
 
         // 카카오 kakaoAccessToken -> 사용자 정보 받기
         KakaoUserInfoResDTO userInfo = kakaoAuthClient.getUserInfo(kakaoAccessToken);
 
         // 회원 존재 여부 조회
         Optional<Member> existingMember = memberRepository.findBySocialId(userInfo.id());
-
         boolean isNewUser = existingMember.isEmpty();
 
         // 신규 회원이면 저장, 기존 회원이면 그대로

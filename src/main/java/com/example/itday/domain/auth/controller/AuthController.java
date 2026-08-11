@@ -27,19 +27,9 @@ public class AuthController {
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
 
-    @GetMapping("/oauth/social")
-    public void redirectToKakao(HttpServletResponse response) throws IOException {
-        String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize"
-                + "?client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&response_type=code"
-                + "&scope=account_email,name,birthday,birthyear,phone_number";
-        response.sendRedirect(kakaoAuthUrl);
-    }
-
     @PostMapping("/oauth/social/callback")
     public ApiResponse<KakaoLoginResDTO> kakaoCallback(@RequestBody KakaoLoginReqDTO request) {
-        KakaoLoginResDTO result = authService.kakaoLogin(request.code());
+        KakaoLoginResDTO result = authService.kakaoLogin(request.kakaoAccessToken());
         return ApiResponse.success(result);
     }
 
