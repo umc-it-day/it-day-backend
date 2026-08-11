@@ -5,7 +5,7 @@ import com.example.itday.domain.membership.dto.MembershipGradeResDTO;
 import com.example.itday.domain.membership.dto.TelecomResDTO;
 import com.example.itday.domain.membership.enums.Telecom;
 import com.example.itday.domain.membership.service.MembershipService;
-import com.example.itday.global.apiPayload.ApiResponse;
+import com.example.itday.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,17 +23,17 @@ public class MembershipController {
 
     @GetMapping()
     public ApiResponse<List<TelecomResDTO>> getTelecoms() {
-        return ApiResponse.onSuccess(membershipService.getTelecoms());
+        return ApiResponse.success(membershipService.getTelecoms());
     }
 
     @GetMapping("/{telecom}/grades")
     public ApiResponse<List<MembershipGradeResDTO>> getGrades(@PathVariable Telecom telecom) {
-        return ApiResponse.onSuccess(membershipService.getGrades(telecom));
+        return ApiResponse.success(membershipService.getGrades(telecom));
     }
 
     @GetMapping("/grades-with-benefits")
     public ApiResponse<List<GradeWithBenefitsResDTO>> getAllGradesWithBenefits() {
         List<GradeWithBenefitsResDTO> result = membershipService.getAllBenefits();
-        return ApiResponse.onSuccess(result);
+        return ApiResponse.success(result);
     }
 }

@@ -5,10 +5,10 @@ import com.example.itday.domain.benefit.repository.BenefitRepository;
 import com.example.itday.domain.brands.entity.Brand;
 import com.example.itday.domain.brands.repository.BrandRepository;
 import com.example.itday.domain.map.dto.*;
-import com.example.itday.domain.map.exception.KakaoMapApiException;
-import com.example.itday.domain.map.exception.StoreNotFoundException;
 import com.example.itday.domain.store.entity.Store;
 import com.example.itday.domain.store.repository.StoreRepository;
+import com.example.itday.global.exception.ErrorCode;
+import com.example.itday.global.exception.ItDayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -103,8 +103,7 @@ public class MapService {
                     kakaoResponse.meta().totalCount()
             );
         } catch (WebClientResponseException exception) {
-            throw new KakaoMapApiException(
-                    "Failed to call the Kakao local search API.",
+            throw new ItDayException(ErrorCode.KAKAO_MAP_API_ERROR,
                     exception
             );
         }
@@ -118,7 +117,7 @@ public class MapService {
         Optional<Store> optionalStore = storeRepository.findById(storeId);
 
         if (optionalStore.isEmpty()) {
-            throw new StoreNotFoundException(storeId);
+            throw new ItDayException(ErrorCode.STORE_NOT_FOUND, "storeId=" + storeId);
         }
 
         Store store = optionalStore.get();
@@ -160,7 +159,8 @@ public class MapService {
         if (kakaoResponse == null
                 || kakaoResponse.documents() == null
                 || kakaoResponse.meta() == null) {
-            throw new KakaoMapApiException(
+            throw new ItDayException(
+                    ErrorCode.KAKAO_MAP_API_ERROR,
                     "The Kakao local search API returned an invalid response."
             );
         }
@@ -274,7 +274,9 @@ public class MapService {
             return results;
 
         } catch (WebClientResponseException exception) {
-            throw new KakaoMapApiException("Failed to call the Kakao local search API.", exception);
+            throw new ItDayException(
+                    ErrorCode.KAKAO_MAP_API_ERROR,
+                    exception);
         }
     }
 

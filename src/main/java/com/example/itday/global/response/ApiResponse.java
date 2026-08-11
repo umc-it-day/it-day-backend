@@ -45,4 +45,12 @@ public class ApiResponse<T> {
                 null
         );
     }
+
+    public static<T> ApiResponse<T> failure(String message, T data) {
+        return new ApiResponse<>(
+                false,
+                message,
+                data
+        );
+    }
 }
