@@ -31,24 +31,6 @@ public class KakaoAuthClient {
     private static final String USER_INFO_URI = "https://kapi.kakao.com/v2/user/me";
     private static final String UNLINK_URI = "https://kapi.kakao.com/v1/user/unlink";
 
-    // 인가 code를 카카오 accessToken으로 교환
-    public String getAccessToken(String code) {
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", clientId);
-        body.add("redirect_uri", redirectUri);
-        body.add("client_secret",clientSecret);
-        body.add("code", code);
-
-        KakaoTokenResDTO response = restClient.post()
-                .uri(TOKEN_URI)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(body)
-                .retrieve()
-                .body(KakaoTokenResDTO.class);
-        return response.accessToken();
-    }
 
     public KakaoUserInfoResDTO getUserInfo(String kakaoAccessToken) {
 

@@ -18,7 +18,6 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
-            "/api/oauth/social",
             "/api/oauth/social/callback",
             "/api/auth/refresh",
             "/api/maps/**",
