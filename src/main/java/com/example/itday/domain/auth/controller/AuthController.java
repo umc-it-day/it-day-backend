@@ -5,7 +5,7 @@ import com.example.itday.domain.auth.dto.AuthReissueResDTO;
 import com.example.itday.domain.auth.dto.KakaoLoginReqDTO;
 import com.example.itday.domain.auth.dto.KakaoLoginResDTO;
 import com.example.itday.domain.auth.service.AuthService;
-import com.example.itday.global.apiPayload.ApiResponse;
+import com.example.itday.global.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,18 +40,18 @@ public class AuthController {
     @PostMapping("/oauth/social/callback")
     public ApiResponse<KakaoLoginResDTO> kakaoCallback(@RequestBody KakaoLoginReqDTO request) {
         KakaoLoginResDTO result = authService.kakaoLogin(request.code());
-        return ApiResponse.onSuccess(result);
+        return ApiResponse.success(result);
     }
 
     @PostMapping("/auth/refresh")
     public ApiResponse<AuthReissueResDTO> reissue(@RequestBody AuthReissueReqDTO request) {
         AuthReissueResDTO result = authService.reissue(request.refreshToken());
-        return ApiResponse.onSuccess("성공적으로 재발급 되었습니다",result);
+        return ApiResponse.success("성공적으로 재발급 되었습니다",result);
     }
 
     @PostMapping("/auth/logout")
     public ApiResponse<Void> logout(@AuthenticationPrincipal Long memberId){
         authService.logout(memberId);
-        return ApiResponse.onSuccess("로그아웃 되었습니다", null);
+        return ApiResponse.success("로그아웃 되었습니다");
     }
 }

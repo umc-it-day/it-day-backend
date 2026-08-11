@@ -4,12 +4,11 @@ import com.example.itday.domain.auth.dto.AuthReissueResDTO;
 import com.example.itday.domain.auth.dto.KakaoLoginResDTO;
 import com.example.itday.domain.auth.dto.KakaoUserInfoResDTO;
 import com.example.itday.domain.auth.entity.RefreshToken;
-import com.example.itday.domain.auth.exception.ExpiredTokenException;
-import com.example.itday.domain.auth.exception.InvalidTokenException;
+import com.example.itday.global.exception.ErrorCode;
 import com.example.itday.domain.auth.repository.RefreshTokenRepository;
 import com.example.itday.domain.member.entity.Member;
 import com.example.itday.domain.member.repository.MemberRepository;
-import com.example.itday.global.apiPayload.code.ErrorCode;
+import com.example.itday.global.exception.ItDayException;
 import com.example.itday.global.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -71,10 +70,10 @@ public class AuthService {
     public AuthReissueResDTO reissue(String refreshTokenValue){
 
         RefreshToken savedToken = refreshTokenRepository.findByToken(refreshTokenValue)
-                .orElseThrow(()-> new InvalidTokenException(ErrorCode.INVALID_TOKEN));
+                .orElseThrow(()-> new ItDayException(ErrorCode.INVALID_TOKEN));
         if(savedToken.getExpiresAt().isBefore(LocalDateTime.now())){
             refreshTokenRepository.delete(savedToken);
-            throw new ExpiredTokenException(ErrorCode.EXPIRED_TOKEN);
+            throw new ItDayException(ErrorCode.EXPIRED_TOKEN);
         }
 
         Long memberId = savedToken.getMemberId();

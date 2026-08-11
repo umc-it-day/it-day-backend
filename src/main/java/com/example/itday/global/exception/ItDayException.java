@@ -19,4 +19,9 @@ public class ItDayException extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
     }
+
+    public ItDayException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.errorCode = errorCode;
+    }
 }

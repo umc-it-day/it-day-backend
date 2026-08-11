@@ -10,7 +10,6 @@ import com.example.itday.domain.member.dto.OnboardingReqDTO;
 import com.example.itday.domain.member.entity.Member;
 import com.example.itday.domain.member.entity.MemberPreferredBrand;
 import com.example.itday.domain.member.entity.MemberTerms;
-import com.example.itday.domain.member.exception.MemberNotFoundException;
 import com.example.itday.domain.member.repository.MemberPreferredBrandRepository;
 import com.example.itday.domain.member.repository.MemberRepository;
 import com.example.itday.domain.membership.dto.MembershipSummaryResDTO;
@@ -20,7 +19,8 @@ import com.example.itday.domain.member.repository.MemberTermsRepository;
 import com.example.itday.domain.membership.repository.MembershipRepository;
 import com.example.itday.domain.terms.entity.Terms;
 import com.example.itday.domain.terms.repository.TermsRepository;
-import com.example.itday.global.apiPayload.code.ErrorCode;
+import com.example.itday.global.exception.ErrorCode;
+import com.example.itday.global.exception.ItDayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +44,7 @@ public class MemberService {
     @Transactional
     public void withdraw(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
 
         kakaoAuthClient.unlink(member.getSocialId());
         refreshTokenRepository.deleteByMemberId(memberId);
@@ -54,7 +54,7 @@ public class MemberService {
     public MembershipSummaryResDTO getMembershipSummary(Long memberId){
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
 
         Membership membership = member.getMembership();
 
@@ -63,7 +63,7 @@ public class MemberService {
 
     public MemberInfoResDTO getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(()->new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(()->new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
         return new MemberInfoResDTO(member.getName(),member.getEmail(),member.getPhone());
     }
 
@@ -71,7 +71,7 @@ public class MemberService {
     public void submitOnboarding(Long memberId, OnboardingReqDTO request) {
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<MemberTerms> memberTermsList = request.termAgreements().stream()
                 .map(agreement -> {
@@ -109,7 +109,7 @@ public class MemberService {
     @Transactional
     public void updateMembership(Long memberId, MembershipUpdateReqDTO request){
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(()-> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(()-> new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
 
         Membership membership = membershipRepository.findById(request.membershipId())
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 멤버십입니다."));
@@ -119,7 +119,7 @@ public class MemberService {
     @Transactional
     public void updateMemberName(Long memberId, MemberNameUpdateReqDTO request){
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(()->new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(()->new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
         member.setName(request.name());
     }
 }

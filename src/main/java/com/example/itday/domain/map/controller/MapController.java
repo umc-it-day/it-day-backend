@@ -4,7 +4,7 @@ import com.example.itday.domain.map.dto.MapSearchResponse;
 import com.example.itday.domain.map.dto.NearbyPlaceResDTO;
 import com.example.itday.domain.map.dto.StoreDetailResponse;
 import com.example.itday.domain.map.service.MapService;
-import com.example.itday.global.apiPayload.ApiResponse;
+import com.example.itday.global.response.ApiResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -43,7 +43,7 @@ public class MapController {
                 page,
                 size
         );
-        return ApiResponse.onSuccess(result);
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/stores/{storeId}")
@@ -54,7 +54,7 @@ public class MapController {
     ) {
         StoreDetailResponse result =
                 mapService.getStoreDetail(storeId, longitude, latitude);
-        return ApiResponse.onSuccess(result);
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/stores/search")
@@ -65,7 +65,7 @@ public class MapController {
             @RequestParam(required = false) Integer radius
     ) {
         List<NearbyPlaceResDTO> result = mapService.searchByCategory(category, longitude, latitude, radius);
-        return ApiResponse.onSuccess(result);
+        return ApiResponse.success(result);
     }
 
 

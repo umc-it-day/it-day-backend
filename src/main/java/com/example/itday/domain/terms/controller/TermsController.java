@@ -2,7 +2,7 @@ package com.example.itday.domain.terms.controller;
 
 import com.example.itday.domain.terms.dto.TermsResDTO;
 import com.example.itday.domain.terms.service.TermsService;
-import com.example.itday.global.apiPayload.ApiResponse;
+import com.example.itday.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +20,6 @@ public class TermsController {
     @GetMapping
     public ApiResponse<List<TermsResDTO>> getTerms(){
         List<TermsResDTO> result = termsService.getTerms();
-        return ApiResponse.onSuccess("약관 조회 완료",result);
+        return ApiResponse.success("약관 조회 완료",result);
     }
 }
