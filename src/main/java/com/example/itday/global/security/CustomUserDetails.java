@@ -1,6 +1,6 @@
 package com.example.itday.global.security;
 
-import com.i_route.backend.user.entity.User;
+import com.example.itday.domain.user.entity.User;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
