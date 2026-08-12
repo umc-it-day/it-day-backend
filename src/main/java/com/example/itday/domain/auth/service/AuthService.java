@@ -4,6 +4,8 @@ import com.example.itday.domain.auth.dto.AuthReissueResDTO;
 import com.example.itday.domain.auth.dto.KakaoLoginResDTO;
 import com.example.itday.domain.auth.dto.KakaoUserInfoResDTO;
 import com.example.itday.domain.auth.entity.RefreshToken;
+import com.example.itday.domain.lottery.entity.LotteryNumber;
+import com.example.itday.domain.lottery.repository.LotteryNumberRepository;
 import com.example.itday.global.exception.ErrorCode;
 import com.example.itday.domain.auth.repository.RefreshTokenRepository;
 import com.example.itday.domain.member.entity.Member;
@@ -26,6 +28,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
+    private final LotteryNumberRepository lotteryNumberRepository;
 
     @Transactional
     public KakaoLoginResDTO kakaoLogin(String kakaoAccessToken){
@@ -48,7 +51,14 @@ public class AuthService {
                     .createdAt(LocalDateTime.now())
                     .build();
 
-            return memberRepository.save(newMember);
+            Member savedMember = memberRepository.save(newMember);
+            
+            // 당첨 번호 배정
+            LotteryNumber lotteryNumber = lotteryNumberRepository.findRandomUnassigned()
+                    .orElseThrow(()-> new ItDayException(ErrorCode.LOTTERY_NUMBER_EXHAUSTED));
+            lotteryNumber.assignTo(savedMember);
+
+            return savedMember;
         });
 
         // JWT 발급

@@ -110,6 +110,16 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND,
             "MAP_002",
             "매장을 찾을 수 없습니다."
+    ),
+
+    LOTTERY_NUMBER_EXHAUSTED(HttpStatus.CONFLICT,
+            "LOTTERY_001",
+            "배정 가능한 번호가 모두 소진되었습니다."
+    ),
+
+    LOTTERY_NUMBER_NOT_FOUND(HttpStatus.NOT_FOUND,
+            "LOTTERY_002",
+            "존재하지 않는 번호입니다."
     );
 
     private final HttpStatus httpStatus;
