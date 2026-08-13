@@ -8,6 +8,7 @@ import com.example.itday.global.exception.ErrorCode;
 import com.example.itday.global.exception.ItDayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,5 +29,15 @@ public class LotteryService {
                 .orElseThrow(() -> new ItDayException(ErrorCode.LOTTERY_NUMBER_NOT_FOUND));
 
         return new LotteryNumResDTO(lotteryNumber.getNumber());
+    }
+
+    @Transactional
+    public LotteryNumber assignLotteryNumber(Long memberId) {
+        LotteryNumber lotteryNumber = lotteryNumberRepository.findRandomUnassigned()
+                .orElseThrow(() -> new IllegalStateException("남은 복권 번호가 없습니다."));
+
+        lotteryNumber.assignMember(memberId);
+
+        return lotteryNumber;
     }
 }

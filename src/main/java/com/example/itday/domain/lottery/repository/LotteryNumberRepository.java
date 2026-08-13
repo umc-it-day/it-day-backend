@@ -10,8 +10,17 @@ import java.util.Optional;
 
 public interface LotteryNumberRepository extends JpaRepository<LotteryNumber,Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query(value = "SELECT * FROM lotteryNumber WHERE memberId IS NULL ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(
+            value = """
+            SELECT *
+            FROM lotteryNumber
+            WHERE memberId IS NULL
+            ORDER BY RAND()
+            LIMIT 1
+            FOR UPDATE
+            """,
+            nativeQuery = true
+    )
     Optional<LotteryNumber> findRandomUnassigned();
 
     Optional<LotteryNumber> findByNumber(String number);

@@ -39,4 +39,7 @@ public class LotteryNumber {
         this.member = member;
         this.assignedAt = LocalDateTime.now();
     }
+
+    public void assignMember(Long memberId) {
+    }
 }
