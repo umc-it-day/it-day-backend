@@ -37,5 +37,9 @@ kakao:
   client-secret: ${KAKAO_CLIENT_SECRET:}
   admin-key: ${KAKAO_ADMIN_KEY:}
 
+toss:
+  secret-key: ${TOSS_SECRET_KEY:test_sk_dummy}
+  client-key: ${TOSS_CLIENT_KEY:test_ck_dummy}
+
 frontend:
   base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
