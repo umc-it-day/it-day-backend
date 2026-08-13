@@ -21,8 +21,8 @@ public class SecurityConfig {
             "/api/oauth/social/callback",
             "/api/auth/refresh",
             "/api/maps/**",
-            "api/terms",
-            "api/brands"
+            "/api/terms",
+            "/api/brands"
     };
 
     @Bean
