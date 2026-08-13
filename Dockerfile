@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17-jdk
 
-ADD build/libs/*.jar app.jar
+COPY build/libs/it-day-backend-0.0.1-SNAPSHOT.jar app.jar
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app.jar"]
