@@ -21,6 +21,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -137,6 +139,75 @@ public class MapService {
         }
 
         return StoreDetailResponse.from(store, distanceMeters, activeBenefits);
+    }
+
+    public MapSearchResponse getNearbyPlaces(
+            Double longitude,
+            Double latitude,
+            Integer radius,
+            Integer page,
+            Integer size
+    ) {
+        List<Store> stores = storeRepository.findAll();
+        List<PlaceResponse> nearbyPlaces = new ArrayList<>();
+
+        for (Store store : stores) {
+            Integer distanceMeters = calculateDistanceMeters(
+                    longitude,
+                    latitude,
+                    store.getLongitude().doubleValue(),
+                    store.getLatitude().doubleValue()
+            );
+
+            if (distanceMeters > radius) {
+                continue;
+            }
+
+            List<Benefit> benefits =
+                    benefitRepository.findAllByBrandId(store.getBrand().getId());
+            List<Benefit> activeBenefits = findActiveBenefits(benefits);
+
+            PlaceResponse placeResponse = PlaceResponse.from(
+                    store,
+                    distanceMeters,
+                    activeBenefits
+            );
+            nearbyPlaces.add(placeResponse);
+        }
+
+        Collections.sort(nearbyPlaces, new Comparator<PlaceResponse>() {
+            @Override
+            public int compare(PlaceResponse firstPlace, PlaceResponse secondPlace) {
+                return firstPlace.distanceMeters()
+                        .compareTo(secondPlace.distanceMeters());
+            }
+        });
+
+        int totalCount = nearbyPlaces.size();
+        int fromIndex = (page - 1) * size;
+
+        if (fromIndex >= totalCount) {
+            return MapSearchResponse.of(
+                    new ArrayList<>(),
+                    page,
+                    size,
+                    true,
+                    totalCount
+            );
+        }
+
+        int toIndex = Math.min(fromIndex + size, totalCount);
+        List<PlaceResponse> pagePlaces =
+                new ArrayList<>(nearbyPlaces.subList(fromIndex, toIndex));
+        boolean isEnd = toIndex >= totalCount;
+
+        return MapSearchResponse.of(
+                pagePlaces,
+                page,
+                size,
+                isEnd,
+                totalCount
+        );
     }
 
     private List<Benefit> findActiveBenefits(List<Benefit> benefits) {
