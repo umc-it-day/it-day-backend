@@ -48,5 +48,25 @@ public interface AttendanceRepository
             @Param("endDateTime") LocalDateTime endDateTime
     );
 
-    int findMaxConsecutiveDays(Long userId, LocalDate startDate, LocalDate endDate);
+    default int findMaxConsecutiveDays(Long userId, LocalDate startDate, LocalDate endDate) {
+        List<Attendance> attendances =
+                findAllByUserIdAndAttendanceDateBetweenOrderByAttendanceDateAsc(
+                        userId, startDate, endDate
+                );
+
+        int maxStreak = 0;
+        int currentStreak = 0;
+        LocalDate previousDate = null;
+
+        for (Attendance attendance : attendances) {
+            LocalDate date = attendance.getAttendanceDate();
+            currentStreak = (previousDate != null && date.equals(previousDate.plusDays(1)))
+                    ? currentStreak + 1
+                    : 1;
+            maxStreak = Math.max(maxStreak, currentStreak);
+            previousDate = date;
+        }
+
+        return maxStreak;
+    }
 }

@@ -35,9 +35,43 @@ public interface PointHistoryRepository
         """)
     Integer sumPointByUserId(@Param("userId") Long userId);
 
-    int sumPointByUserIdAndMonth(Long userId, LocalDate monthStart, LocalDate monthEnd);
+    @Query("""
+        select coalesce(sum(p.point), 0)
+        from PointHistory p
+        where p.userId = :userId
+          and function('date', p.createdAt) between :monthStart and :monthEnd
+        """)
+    Integer sumPointByUserIdAndMonth(
+            @Param("userId") Long userId,
+            @Param("monthStart") LocalDate monthStart,
+            @Param("monthEnd") LocalDate monthEnd
+    );
 
-    int sumByUserIdAndReasonsAndPeriod(Long userId, List<PointReason> visitReasons, LocalDateTime startDateTime, LocalDateTime endDateTimeExclusive);
+    @Query("""
+        select coalesce(sum(p.point), 0)
+        from PointHistory p
+        where p.userId = :userId
+          and p.reason in :visitReasons
+          and p.createdAt >= :startDateTime
+          and p.createdAt < :endDateTimeExclusive
+        """)
+    Integer sumByUserIdAndReasonsAndPeriod(
+            @Param("userId") Long userId,
+            @Param("visitReasons") List<PointReason> visitReasons,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTimeExclusive") LocalDateTime endDateTimeExclusive
+    );
 
-    int sumByUserIdAndPeriod(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTimeExclusive);
+    @Query("""
+        select coalesce(sum(p.point), 0)
+        from PointHistory p
+        where p.userId = :userId
+          and p.createdAt >= :startDateTime
+          and p.createdAt < :endDateTimeExclusive
+        """)
+    Integer sumByUserIdAndPeriod(
+            @Param("userId") Long userId,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTimeExclusive") LocalDateTime endDateTimeExclusive
+    );
 }
