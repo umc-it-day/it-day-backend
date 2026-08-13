@@ -1,5 +1,6 @@
 package com.example.itday.domain.lottery.service;
 
+import com.example.itday.domain.lottery.dto.LotteryNumResDTO;
 import com.example.itday.domain.lottery.dto.LotteryResDTO;
 import com.example.itday.domain.lottery.entity.LotteryNumber;
 import com.example.itday.domain.lottery.repository.LotteryNumberRepository;
@@ -19,5 +20,13 @@ public class LotteryService {
                 .orElseThrow(() -> new ItDayException(ErrorCode.LOTTERY_NUMBER_NOT_FOUND));
 
         return new LotteryResDTO(lotteryNumber.getRanking());
+    }
+
+    public LotteryNumResDTO getMyLotteryNumber(Long memberId) {
+
+        LotteryNumber lotteryNumber = lotteryNumberRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new ItDayException(ErrorCode.LOTTERY_NUMBER_NOT_FOUND));
+
+        return new LotteryNumResDTO(lotteryNumber.getNumber());
     }
 }

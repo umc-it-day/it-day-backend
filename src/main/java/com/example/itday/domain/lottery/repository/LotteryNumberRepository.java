@@ -15,4 +15,6 @@ public interface LotteryNumberRepository extends JpaRepository<LotteryNumber,Lon
     Optional<LotteryNumber> findRandomUnassigned();
 
     Optional<LotteryNumber> findByNumber(String number);
+
+    Optional<LotteryNumber> findByMemberId(Long memberId);
 }

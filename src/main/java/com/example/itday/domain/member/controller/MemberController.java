@@ -3,6 +3,8 @@ package com.example.itday.domain.member.controller;
 import com.example.itday.domain.barcode.dto.BarcodeReqDTO;
 import com.example.itday.domain.barcode.dto.BarcodeResDTO;
 import com.example.itday.domain.barcode.service.BarcodeService;
+import com.example.itday.domain.lottery.dto.LotteryNumResDTO;
+import com.example.itday.domain.lottery.service.LotteryService;
 import com.example.itday.domain.member.dto.MemberInfoResDTO;
 import com.example.itday.domain.member.dto.MemberNameUpdateReqDTO;
 import com.example.itday.domain.member.dto.OnboardingReqDTO;
@@ -25,6 +27,7 @@ public class MemberController {
     private final MemberService memberService;
     private final BarcodeService barcodeService;
     private final UsageService usageService;
+    private final LotteryService lotteryService;
 
     @DeleteMapping("/me")
     public ApiResponse<Void> withdraw(@AuthenticationPrincipal Long memberId){
@@ -106,5 +109,13 @@ public class MemberController {
     ) {
         memberService.updateMemberName(memberId, request);
         return ApiResponse.success("이름이 변경되었습니다.");
+    }
+
+    @GetMapping("/me/lottery")
+    public ApiResponse<LotteryNumResDTO> getMyLotteryNumber(
+            @AuthenticationPrincipal Long memberId
+    ) {
+        LotteryNumResDTO result = lotteryService.getMyLotteryNumber(memberId);
+        return ApiResponse.success(result);
     }
 }
