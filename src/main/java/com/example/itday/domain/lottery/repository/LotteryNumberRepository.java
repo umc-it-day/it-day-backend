@@ -13,7 +13,7 @@ public interface LotteryNumberRepository extends JpaRepository<LotteryNumber,Lon
     @Query(
             value = """
             SELECT *
-            FROM lotteryNumber
+            FROM lotterynumber
             WHERE memberId IS NULL
             ORDER BY RAND()
             LIMIT 1
