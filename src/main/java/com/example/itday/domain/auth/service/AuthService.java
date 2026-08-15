@@ -38,7 +38,6 @@ public class AuthService {
 
         // 회원 존재 여부 조회
         Optional<Member> existingMember = memberRepository.findBySocialId(userInfo.id());
-        boolean isNewUser = existingMember.isEmpty();
 
         // 신규 회원이면 저장, 기존 회원이면 그대로
         Member member = existingMember.orElseGet(() -> {
@@ -60,6 +59,9 @@ public class AuthService {
 
             return savedMember;
         });
+
+        // membershipId가 존재하지 않으면 신규유저로 판별
+        boolean isNewUser = member.getMembership() == null;
 
         // JWT 발급
         String accessToken = jwtUtil.createAccessToken(member.getId());
