@@ -5,6 +5,8 @@ import com.example.itday.domain.map.dto.NearbyPlaceResDTO;
 import com.example.itday.domain.map.dto.StoreDetailResponse;
 import com.example.itday.domain.map.service.MapService;
 import com.example.itday.global.response.ApiResponse;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -54,6 +56,42 @@ public class MapController {
     ) {
         StoreDetailResponse result =
                 mapService.getStoreDetail(storeId, longitude, latitude);
+        return ApiResponse.success(result);
+    }
+
+    @GetMapping("/nearby")
+    public ApiResponse<MapSearchResponse> getNearbyPlaces(
+            @RequestParam
+            @DecimalMin("-180.0")
+            @DecimalMax("180.0")
+            Double longitude,
+
+            @RequestParam
+            @DecimalMin("-90.0")
+            @DecimalMax("90.0")
+            Double latitude,
+
+            @RequestParam(defaultValue = "1000")
+            @Min(1)
+            @Max(20_000)
+            Integer radius,
+
+            @RequestParam(defaultValue = "1")
+            @Min(1)
+            Integer page,
+
+            @RequestParam(defaultValue = "15")
+            @Min(1)
+            @Max(15)
+            Integer size
+    ) {
+        MapSearchResponse result = mapService.getNearbyPlaces(
+                longitude,
+                latitude,
+                radius,
+                page,
+                size
+        );
         return ApiResponse.success(result);
     }
 
