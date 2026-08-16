@@ -10,6 +10,7 @@ import com.example.itday.domain.store.repository.StoreRepository;
 import com.example.itday.global.exception.ErrorCode;
 import com.example.itday.global.exception.ItDayException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class MapService {
 
@@ -52,6 +54,15 @@ public class MapService {
         URI uri = createUri(query, longitude, latitude, radius, page, size);
 
         try {
+            log.info(
+                    "Kakao local search request started: query={}, hasCoordinates={}, radius={}, page={}, size={}",
+                    query,
+                    longitude != null && latitude != null,
+                    radius,
+                    page,
+                    size
+            );
+
             KakaoLocalResponse kakaoResponse = webClientBuilder.build()
                     .get()
                     .uri(uri)
@@ -61,6 +72,12 @@ public class MapService {
                     .block();
 
             validateKakaoResponse(kakaoResponse);
+
+            log.info(
+                    "Kakao local search request succeeded: documentCount={}, totalCount={}",
+                    kakaoResponse.documents().size(),
+                    kakaoResponse.meta().totalCount()
+            );
 
             List<PlaceResponse> places = new ArrayList<>();
 
@@ -105,6 +122,13 @@ public class MapService {
                     kakaoResponse.meta().totalCount()
             );
         } catch (WebClientResponseException exception) {
+            log.error(
+                    "Kakao local search request failed: status={}, responseBody={}",
+                    exception.getStatusCode().value(),
+                    exception.getResponseBodyAsString(),
+                    exception
+            );
+
             throw new ItDayException(ErrorCode.KAKAO_MAP_API_ERROR,
                     exception
             );
@@ -302,6 +326,13 @@ public class MapService {
         URI uri = createUri(category, longitude, latitude, radius, 1, 15);
 
         try {
+            log.info(
+                    "Kakao category search request started: category={}, hasCoordinates={}, radius={}",
+                    category,
+                    longitude != null && latitude != null,
+                    radius
+            );
+
             KakaoLocalResponse kakaoResponse = webClientBuilder.build()
                     .get()
                     .uri(uri)
@@ -311,6 +342,12 @@ public class MapService {
                     .block();
 
             validateKakaoResponse(kakaoResponse);
+
+            log.info(
+                    "Kakao category search request succeeded: documentCount={}, totalCount={}",
+                    kakaoResponse.documents().size(),
+                    kakaoResponse.meta().totalCount()
+            );
 
             List<NearbyPlaceResDTO> results = new ArrayList<>();
 
@@ -345,6 +382,13 @@ public class MapService {
             return results;
 
         } catch (WebClientResponseException exception) {
+            log.error(
+                    "Kakao category search request failed: status={}, responseBody={}",
+                    exception.getStatusCode().value(),
+                    exception.getResponseBodyAsString(),
+                    exception
+            );
+
             throw new ItDayException(
                     ErrorCode.KAKAO_MAP_API_ERROR,
                     exception);
