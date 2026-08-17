@@ -6,5 +6,7 @@ public enum TelecomGrade {
     GOLD,
     SILVER,
     DIAMOND,
-    LITE
+    LITE,
+    WHITE,
+    NORMAL
 }
