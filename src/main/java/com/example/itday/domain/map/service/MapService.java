@@ -18,14 +18,20 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +40,17 @@ import java.util.Optional;
 public class MapService {
 
     private static final double EARTH_RADIUS_METERS = 6_371_000;
+    private static final List<String> KAKAO_NEARBY_CATEGORY_CODES = List.of(
+            "MT1",
+            "CS2",
+            "AC5",
+            "OL7",
+            "CT1",
+            "FD6",
+            "CE7",
+            "HP8",
+            "PM9"
+    );
 
     private final WebClient.Builder webClientBuilder;
     private final StoreRepository storeRepository;
@@ -165,6 +182,7 @@ public class MapService {
         return StoreDetailResponse.from(store, distanceMeters, activeBenefits);
     }
 
+    @Transactional
     public MapSearchResponse getNearbyPlaces(
             Double longitude,
             Double latitude,
@@ -197,6 +215,10 @@ public class MapService {
                     activeBenefits
             );
             nearbyPlaces.add(placeResponse);
+        }
+
+        if (nearbyPlaces.isEmpty()) {
+            nearbyPlaces = searchKakaoNearby(longitude, latitude, radius);
         }
 
         Collections.sort(nearbyPlaces, new Comparator<PlaceResponse>() {
@@ -232,6 +254,209 @@ public class MapService {
                 isEnd,
                 totalCount
         );
+    }
+
+    private List<PlaceResponse> searchKakaoNearby(
+            Double longitude,
+            Double latitude,
+            Integer radius
+    ) {
+        List<Brand> brands = new ArrayList<>(brandRepository.findAll());
+        sortBrandsByNameLength(brands);
+
+        List<PlaceResponse> places = new ArrayList<>();
+        Set<String> placeIds = new HashSet<>();
+        Map<Long, List<Benefit>> benefitsByBrandId = new HashMap<>();
+
+        try {
+            for (String categoryCode : KAKAO_NEARBY_CATEGORY_CODES) {
+                KakaoLocalResponse kakaoResponse = requestKakaoCategory(
+                        categoryCode,
+                        longitude,
+                        latitude,
+                        radius
+                );
+
+                for (KakaoLocalResponse.Document document : kakaoResponse.documents()) {
+                    if (placeIds.contains(document.id())) {
+                        continue;
+                    }
+
+                    Brand brand = findMatchingBrand(document.placeName(), brands);
+
+                    if (brand == null) {
+                        continue;
+                    }
+
+                    Store store = findOrCreateStore(document, brand);
+                    placeIds.add(document.id());
+
+                    List<Benefit> activeBenefits =
+                            benefitsByBrandId.get(store.getBrand().getId());
+
+                    if (activeBenefits == null) {
+                        List<Benefit> benefits =
+                                benefitRepository.findAllByBrandId(store.getBrand().getId());
+                        activeBenefits = findActiveBenefits(benefits);
+                        benefitsByBrandId.put(store.getBrand().getId(), activeBenefits);
+                    }
+
+                    Integer distanceMeters = calculateDistanceMeters(
+                            longitude,
+                            latitude,
+                            Double.valueOf(document.x()),
+                            Double.valueOf(document.y())
+                    );
+
+                    PlaceResponse placeResponse = PlaceResponse.from(
+                            document,
+                            distanceMeters,
+                            store,
+                            activeBenefits
+                    );
+                    places.add(placeResponse);
+                }
+            }
+
+            log.info(
+                    "Kakao nearby fallback succeeded: matchedPartnerCount={}",
+                    places.size()
+            );
+            return places;
+        } catch (WebClientResponseException exception) {
+            log.error(
+                    "Kakao nearby fallback failed: status={}, responseBody={}",
+                    exception.getStatusCode().value(),
+                    exception.getResponseBodyAsString(),
+                    exception
+            );
+            throw new ItDayException(ErrorCode.KAKAO_MAP_API_ERROR, exception);
+        }
+    }
+
+    private Store findOrCreateStore(
+            KakaoLocalResponse.Document document,
+            Brand brand
+    ) {
+        Optional<Store> optionalStore =
+                storeRepository.findByKakaoPlaceId(document.id());
+
+        if (optionalStore.isPresent()) {
+            return optionalStore.get();
+        }
+
+        String address = document.roadAddressName();
+
+        if (address == null || address.isBlank()) {
+            address = document.addressName();
+        }
+
+        if (address == null) {
+            address = "";
+        }
+
+        Store store = Store.builder()
+                .brand(brand)
+                .kakaoPlaceId(document.id())
+                .storeName(document.placeName())
+                .address(address)
+                .storeImg(null)
+                .businessHour(null)
+                .telNum(document.phone())
+                .longitude(new BigDecimal(document.x()))
+                .latitude(new BigDecimal(document.y()))
+                .build();
+
+        Store savedStore = storeRepository.save(store);
+
+        log.info(
+                "Kakao partner store cached: kakaoPlaceId={}, storeName={}",
+                savedStore.getKakaoPlaceId(),
+                savedStore.getStoreName()
+        );
+        return savedStore;
+    }
+
+    private KakaoLocalResponse requestKakaoCategory(
+            String categoryCode,
+            Double longitude,
+            Double latitude,
+            Integer radius
+    ) {
+        URI uri = createCategoryUri(
+                categoryCode,
+                longitude,
+                latitude,
+                radius
+        );
+
+        log.info(
+                "Kakao nearby category request started: categoryCode={}, radius={}",
+                categoryCode,
+                radius
+        );
+
+        KakaoLocalResponse kakaoResponse = webClientBuilder.build()
+                .get()
+                .uri(uri)
+                .header("Authorization", "KakaoAK " + kakaoRestApiKey)
+                .retrieve()
+                .bodyToMono(KakaoLocalResponse.class)
+                .block();
+
+        validateKakaoResponse(kakaoResponse);
+        return kakaoResponse;
+    }
+
+    private URI createCategoryUri(
+            String categoryCode,
+            Double longitude,
+            Double latitude,
+            Integer radius
+    ) {
+        return UriComponentsBuilder
+                .fromUriString("https://dapi.kakao.com/v2/local/search/category.json")
+                .queryParam("category_group_code", categoryCode)
+                .queryParam("x", longitude)
+                .queryParam("y", latitude)
+                .queryParam("radius", radius)
+                .queryParam("size", 15)
+                .queryParam("sort", "distance")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private Brand findMatchingBrand(String placeName, List<Brand> brands) {
+        String normalizedPlaceName = normalizeName(placeName);
+
+        for (Brand brand : brands) {
+            String normalizedBrandName = normalizeName(brand.getBrandName());
+
+            if (normalizedPlaceName.contains(normalizedBrandName)) {
+                return brand;
+            }
+        }
+
+        return null;
+    }
+
+    private String normalizeName(String name) {
+        return name
+                .replace(" ", "")
+                .toLowerCase(Locale.ROOT);
+    }
+
+    private void sortBrandsByNameLength(List<Brand> brands) {
+        Collections.sort(brands, new Comparator<Brand>() {
+            @Override
+            public int compare(Brand firstBrand, Brand secondBrand) {
+                return Integer.compare(
+                        secondBrand.getBrandName().length(),
+                        firstBrand.getBrandName().length()
+                );
+            }
+        });
     }
 
     private List<Benefit> findActiveBenefits(List<Benefit> benefits) {
