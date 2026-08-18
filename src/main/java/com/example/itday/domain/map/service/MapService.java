@@ -5,6 +5,8 @@ import com.example.itday.domain.benefit.repository.BenefitRepository;
 import com.example.itday.domain.brands.entity.Brand;
 import com.example.itday.domain.brands.repository.BrandRepository;
 import com.example.itday.domain.map.dto.*;
+import com.example.itday.domain.member.entity.Member;
+import com.example.itday.domain.member.repository.MemberRepository;
 import com.example.itday.domain.store.entity.Store;
 import com.example.itday.domain.store.repository.StoreRepository;
 import com.example.itday.global.exception.ErrorCode;
@@ -56,6 +58,7 @@ public class MapService {
     private final StoreRepository storeRepository;
     private final BenefitRepository benefitRepository;
     private final BrandRepository brandRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${kakao.rest-api-key}")
     private String kakaoRestApiKey;
@@ -541,12 +544,23 @@ public class MapService {
     }
 
     public List<NearbyPlaceResDTO> searchByCategory(
+            Long memberId,
             String category,
             Double longitude,
             Double latitude,
             Integer radius
     ) {
-        List<Brand> brands = brandRepository.findAll();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Long membershipId = member.getMembership().getId();
+
+        // 내 등급으로 혜택받을 수 있는 브랜드만
+        List<Brand> brands = benefitRepository.findAllByMembershipId(membershipId)
+                .stream()
+                .map(Benefit::getBrand)
+                .distinct()
+                .toList();
 
         URI uri = createUri(category, longitude, latitude, radius, 1, 15);
 

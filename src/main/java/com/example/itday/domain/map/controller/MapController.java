@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -97,12 +98,13 @@ public class MapController {
 
     @GetMapping("/stores/search")
     public ApiResponse<List<NearbyPlaceResDTO>> searchByCategory(
+            @AuthenticationPrincipal Long memberId,
             @RequestParam String category,
             @RequestParam Double longitude,
             @RequestParam Double latitude,
             @RequestParam(required = false) Integer radius
     ) {
-        List<NearbyPlaceResDTO> result = mapService.searchByCategory(category, longitude, latitude, radius);
+        List<NearbyPlaceResDTO> result = mapService.searchByCategory(memberId,category, longitude, latitude, radius);
         return ApiResponse.success(result);
     }
 
