@@ -7,6 +7,7 @@ import com.example.itday.domain.brands.repository.BrandRepository;
 import com.example.itday.domain.map.dto.KakaoLocalResponse;
 import com.example.itday.domain.map.dto.MapSearchResponse;
 import com.example.itday.domain.map.dto.PlaceResponse;
+import com.example.itday.domain.member.repository.MemberRepository;
 import com.example.itday.domain.store.entity.Store;
 import com.example.itday.domain.store.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,7 @@ class MapServiceTest {
     private StoreRepository storeRepository;
     private BenefitRepository benefitRepository;
     private BrandRepository brandRepository;
+    private MemberRepository memberRepository;
     private WebClient.ResponseSpec responseSpec;
     private MapService mapService;
 
@@ -41,6 +43,7 @@ class MapServiceTest {
         storeRepository = mock(StoreRepository.class);
         benefitRepository = mock(BenefitRepository.class);
         brandRepository = mock(BrandRepository.class);
+        memberRepository = mock(MemberRepository.class);
 
         WebClient.Builder webClientBuilder = mock(WebClient.Builder.class);
         WebClient webClient = mock(WebClient.class);
@@ -62,7 +65,8 @@ class MapServiceTest {
                 webClientBuilder,
                 storeRepository,
                 benefitRepository,
-                brandRepository
+                brandRepository,
+                memberRepository
         );
         ReflectionTestUtils.setField(mapService, "kakaoRestApiKey", "test-key");
     }
