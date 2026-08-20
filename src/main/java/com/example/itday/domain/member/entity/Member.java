@@ -26,14 +26,8 @@ public class Member {
     private String email;
 
     @Setter
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
-
-    @Column(name = "phone", nullable = false)
-    private String phone;
-
-    @Column(name = "birth")
-    private LocalDate birth;
 
     @Column(name = "profileImg")
     private String profileImg;
