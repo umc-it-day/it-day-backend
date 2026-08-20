@@ -64,7 +64,7 @@ public class MemberService {
     public MemberInfoResDTO getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(()->new ItDayException(ErrorCode.MEMBER_NOT_FOUND));
-        return new MemberInfoResDTO(member.getName(),member.getEmail(),member.getPhone());
+        return new MemberInfoResDTO(member.getName(),member.getEmail());
     }
 
     @Transactional

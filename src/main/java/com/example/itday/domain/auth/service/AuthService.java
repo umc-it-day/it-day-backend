@@ -44,9 +44,7 @@ public class AuthService {
             Member newMember = Member.builder()
                     .socialId(userInfo.id())
                     .email(userInfo.kakaoAccount().email())
-                    .name(userInfo.kakaoAccount().name())
-                    .phone(userInfo.kakaoAccount().phoneNumber())
-                    .birth(toBirthDate(userInfo.kakaoAccount().birthyear(),userInfo.kakaoAccount().birthday()))
+                    .name(userInfo.kakaoAccount().profile().nickname())
                     .createdAt(LocalDateTime.now())
                     .build();
 
