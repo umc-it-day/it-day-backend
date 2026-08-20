@@ -9,10 +9,10 @@ public record KakaoUserInfoResDTO(
 ) {
     public record KakaoAccount(
             String email,
-            Profile profile   // profile이라는 "객체"를 그대로 받음
+            Profile profile
     ) {
         public record Profile(
-                String nickname   // 그 안에 nickname이 있음
+                String nickname
         ) {}
     }
 }
